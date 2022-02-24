@@ -67,9 +67,9 @@ def vec_x_data(data):
     for i in range(len(x_data)):
         df.append({'낙찰자결정방법': x_data['낙찰자결정방법'][i], '입찰률': x_data['입찰률'][i], '업종명': x_data['업종명'][i]})
 
-    # 원 핫 인코딩
-    vec = DictVectorizer(sparse=False, dtype=float)
-    df1 = pd.DataFrame(vec.fit_transform(df))
+    filename = "./restApi/resource/model.pkl"
+    vec = joblib.load(filename)
+    df1 = pd.DataFrame(vec.transform(df))
     df1.columns = vec.get_feature_names()  # 컬럼명 변경
     return df1
 

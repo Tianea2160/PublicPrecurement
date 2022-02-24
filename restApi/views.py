@@ -18,8 +18,10 @@ class CorporationCreate(APIView):
         data = dict(request.data)
 
         output = run_data(data)
-        item = Corporation(data, bidOrNot=output)
-        print(item)
+        output = output[0]
+        for key, value in data.items():
+            data[key] = value.pop()
+        item = Corporation(**data, bidOrNot=output)
         item.save()
         return Response(status=status.HTTP_201_CREATED)
 
