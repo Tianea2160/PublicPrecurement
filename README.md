@@ -2,6 +2,14 @@
 
 이 프로젝트는 공공조달 open api를 만들기 위해서 만들어진 프로젝트 입니다.
 
+
+### 프로젝트 요약
+사용자로부터 request를 받아서 request에 포함된 정보들('낙찰자결정방법','입찰률','업종제한내용')을 가지고 '낙찰여부'를 response하는 api입니다.
+
+해당 기능을 구현하기 위해서 python을 사용하는 django, djangorestframework, drf-yasg를 사용하였고, 이를 통해 사용자가 간단한게 open api를 가져다가 저희의 결과물을 사용할 수 있도록 편의성을 제공합니다.
+
+또한 문서 자동화를 통해 api documentation을 보기 쉽도록 부가적으로 구현했습니다.
+
 # version
 ~~~
 django	4.0.2	
