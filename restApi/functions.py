@@ -7,13 +7,11 @@ import joblib
 import sys
 
 def make_code_list(data):
-    print(data)
-    print(type(data))
     # Series -> numpy배열로 바꾸기
     code = data['업종제한내용'].to_numpy()
 
     # 텍스트와 번호가 같이 있음 -> code 번호만 뽑아오기
-    code_list =[]
+    code_list = []
     for i in range(len(code)):
         numbers = re.findall("\d+", code[i])
         code_list.append(numbers)
@@ -49,12 +47,46 @@ def make_industry_name(code_list, read_data):
             industry_name.append(a_list)  # 리스트로 추가
     return industry_name
 
-def modify_data(data, industry_name):
-    data['업종명'] = industry_name
-    del data['업종제한내용']
-    modified_data = data[['낙찰자결정방법', '입찰률', '업종명']]
 
-    return modified_data
+def modify_data(code_list, read_data, data):
+    decision_list = []
+    rate_list = []
+    industry_name = []
+    bid_list = []
+
+    # code번호 숫자만큼 반복
+    for i in range(len(code_list)):
+
+        # code번호가 1개인 것
+        if len(code_list[i]) == 1:
+            code = int(code_list[i][len(code_list[i]) - 1])  # code번호
+            for key, value in read_data.items():  # 딕션너리 안에 value 값을 코드번호와 비교하면서 해당하는 업종명을 리스트에 추가
+                if code in value:
+                    decision_list.append(data['낙찰자결정방법'][i])
+                    rate_list.append(data['입찰률'][i])
+                    industry_name.append(key)
+                    #bid_list.append(data['낙찰여부'][i])
+                    break
+
+            # code번호가 여러개인 것
+        else:
+            a_list = []
+            for j in code_list[i]:  # code 번호가 여러개인 것을 하나씩 불러오기
+                number = int(j)
+                for key, value in read_data.items():  # 딕션너리 안에 value 값을 코드번호와 비교하면서 해당하는 업종명을 리스트에 추가
+                    if number in value:
+                        a_list.append(key)
+                        break
+            a_list = set(a_list)  # 중복제거하고 다시 리스트로 변환
+            for k in a_list:
+                decision_list.append(data['낙찰자결정방법'][i])
+                rate_list.append(data['입찰률'][i])
+                industry_name.append(k)
+                #bid_list.append(data['낙찰여부'][i])
+
+    final = pd.DataFrame({'낙찰자결정방법': decision_list, '입찰률': rate_list, '업종명': industry_name})
+
+    return final
 
 
 def vec_x_data(data):
@@ -67,7 +99,7 @@ def vec_x_data(data):
     for i in range(len(x_data)):
         df.append({'낙찰자결정방법': x_data['낙찰자결정방법'][i], '입찰률': x_data['입찰률'][i], '업종명': x_data['업종명'][i]})
 
-    filename = "./restApi/resource/vec.pkl"
+    filename = "./restApi/resource/REVISION_vec.pkl"
     vec = joblib.load(filename)
     df1 = pd.DataFrame(vec.transform(df))
     df1.columns = vec.get_feature_names()  # 컬럼명 변경
@@ -90,10 +122,10 @@ def run_data(data):
         read_data = json.load(f)
     code_list = make_code_list(df)
     industry_name = make_industry_name(code_list, read_data)
-    data = modify_data(df, industry_name)
+    data = modify_data(code_list, read_data, df)
     X_data = vec_x_data(data)
     print(X_data)
 
-    model = joblib.load('./restApi/resource/model.pkl')
+    model = joblib.load('./restApi/resource/REVISON_model.pkl')
     pred = model.predict(X_data.to_numpy())
     return pred
